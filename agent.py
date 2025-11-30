@@ -18,11 +18,24 @@ from rag import BrandRAG
 
 load_dotenv()
 
+def get_openai_api_key() -> str:
+    """Get OpenAI API key from Streamlit secrets or environment variable."""
+    try:
+        import streamlit as st
+        if hasattr(st, "secrets") and "OPENAI_API_KEY" in st.secrets:
+            return st.secrets["OPENAI_API_KEY"]
+    except Exception:
+        pass
+    return os.environ.get("OPENAI_API_KEY", "")
+
 class AgentState(TypedDict):
     messages: List[BaseMessage]
     image_b64: str
 
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
+OPENAI_API_KEY = get_openai_api_key()
+if not OPENAI_API_KEY:
+    raise ValueError("OPENAI_API_KEY not found. Please set it in Streamlit secrets or environment variables.")
+
 client = OpenAI(api_key=OPENAI_API_KEY)
 llm = ChatOpenAI(
     model="gpt-4o-mini",

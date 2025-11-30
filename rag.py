@@ -9,6 +9,16 @@ from langchain_core.documents import Document
 
 load_dotenv()
 
+def get_openai_api_key() -> str:
+    """Get OpenAI API key from Streamlit secrets or environment variable."""
+    try:
+        import streamlit as st
+        if hasattr(st, "secrets") and "OPENAI_API_KEY" in st.secrets:
+            return st.secrets["OPENAI_API_KEY"]
+    except Exception:
+        pass
+    return os.environ.get("OPENAI_API_KEY", "")
+
 def load_brand_docs(folder: str = "data/brand_cases") -> List[Document]:
     docs: List[Document] = []
     if not os.path.exists(folder):
@@ -30,7 +40,7 @@ class BrandRAG:
         self, folder: str = "data/brand_cases", openai_api_key: Optional[str] = None
     ):
         self.folder = folder
-        self.openai_api_key = openai_api_key or os.environ.get("OPENAI_API_KEY", "")
+        self.openai_api_key = openai_api_key or get_openai_api_key()
         self.vectorstore: Optional[FAISS] = None
 
         docs = load_brand_docs(folder)
