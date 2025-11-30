@@ -22,30 +22,58 @@ def get_openai_api_key() -> str:
     """Get OpenAI API key from Streamlit secrets or environment variable."""
     try:
         import streamlit as st
-        if hasattr(st, "secrets") and "OPENAI_API_KEY" in st.secrets:
-            return st.secrets["OPENAI_API_KEY"]
+        if hasattr(st, "secrets"):
+            try:
+                if "OPENAI_API_KEY" in st.secrets:
+                    key = st.secrets["OPENAI_API_KEY"]
+                    if key and len(key.strip()) > 0:
+                        return key.strip()
+            except Exception as e:
+                pass
     except Exception:
         pass
-    return os.environ.get("OPENAI_API_KEY", "")
+    env_key = os.environ.get("OPENAI_API_KEY", "")
+    if env_key:
+        return env_key.strip()
+    return ""
 
 class AgentState(TypedDict):
     messages: List[BaseMessage]
     image_b64: str
 
-OPENAI_API_KEY = get_openai_api_key()
-if not OPENAI_API_KEY:
-    raise ValueError(
-        "OPENAI_API_KEY not found. "
-        "Please set it in Streamlit Cloud Secrets or as an environment variable."
+def get_client():
+    """Get OpenAI client with API key from secrets or env."""
+    api_key = get_openai_api_key()
+    if not api_key:
+        raise ValueError(
+            "OPENAI_API_KEY not found. "
+            "Please set it in Streamlit Cloud Secrets or as an environment variable."
+        )
+    return OpenAI(api_key=api_key)
+
+def get_llm():
+    """Get ChatOpenAI LLM with API key from secrets or env."""
+    api_key = get_openai_api_key()
+    if not api_key:
+        raise ValueError(
+            "OPENAI_API_KEY not found. "
+            "Please set it in Streamlit Cloud Secrets or as an environment variable."
+        )
+    return ChatOpenAI(
+        model="gpt-4o-mini",
+        temperature=0.7,
+        openai_api_key=api_key,
     )
 
-client = OpenAI(api_key=OPENAI_API_KEY)
-llm = ChatOpenAI(
-    model="gpt-4o-mini",
-    temperature=0.7,
-    openai_api_key=OPENAI_API_KEY,
-)
-brand_rag = BrandRAG(folder="data/brand_cases", openai_api_key=OPENAI_API_KEY)
+def get_brand_rag():
+    """Get BrandRAG instance with API key from secrets or env."""
+    api_key = get_openai_api_key()
+    if not api_key:
+        raise ValueError(
+            "OPENAI_API_KEY not found. "
+            "Please set it in Streamlit Cloud Secrets or as an environment variable."
+        )
+    return BrandRAG(folder="data/brand_cases", openai_api_key=api_key)
 
 BRAND_SYSTEM_PROMPT = """
 You are an AI marketing strategist for small businesses.
@@ -131,6 +159,7 @@ def brand_node(state: AgentState) -> AgentState:
             user_query = msg.content
             break
 
+    brand_rag = get_brand_rag()
     rag_context, _ = brand_rag.search(user_query) if user_query else ("", [])
     prompt_messages: List[BaseMessage] = [SystemMessage(content=BRAND_SYSTEM_PROMPT)]
 
@@ -146,6 +175,7 @@ def brand_node(state: AgentState) -> AgentState:
         )
 
     prompt_messages.extend(messages)
+    llm = get_llm()
     resp = llm.invoke(prompt_messages)
     return AgentState(
         messages=messages + [resp], image_b64=state.get("image_b64", "")
@@ -157,10 +187,12 @@ def vision_node(state: AgentState) -> AgentState:
     prompt_messages: List[BaseMessage] = [SystemMessage(content=VISION_SYSTEM_PROMPT)]
     prompt_messages.extend(messages)
 
+    llm = get_llm()
     vision_prompt_msg = llm.invoke(prompt_messages)
     vision_prompt = vision_prompt_msg.content
 
     try:
+        client = get_client()
         img_result = client.images.generate(
             model="dall-e-3",
             size="1024x1024",

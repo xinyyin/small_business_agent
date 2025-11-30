@@ -3,11 +3,28 @@ from io import BytesIO
 import streamlit as st
 from PIL import Image
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
-from agent import chat_once, AgentState
+from agent import get_openai_api_key, chat_once, AgentState
 
 st.set_page_config(
     page_title="Small Business Marketing Assistant", page_icon="📣"
 )
+
+api_key = get_openai_api_key()
+if not api_key:
+    st.error("""
+    ⚠️ **API Key Not Configured**
+    
+    Please set your OpenAI API key:
+    - **Streamlit Cloud**: Go to Manage app → Secrets and add:
+      ```toml
+      OPENAI_API_KEY = "sk-your-key-here"
+      ```
+    - **Local**: Create a `.env` file with:
+      ```
+      OPENAI_API_KEY=sk-your-key-here
+      ```
+    """)
+    st.stop()
 
 st.title("📣 Marketing Assistant for Small Business")
 
