@@ -74,7 +74,7 @@ responsible AI considerations.
 ### 3.1 Setup
 
 ```bash
-git clone <your-repo-url>
+git clone git@github.com:xinyyin/small_business_agent.git
 cd marketing-assistant
 
 python -m venv .venv

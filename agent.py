@@ -19,7 +19,6 @@ from rag import BrandRAG
 load_dotenv()
 
 def get_openai_api_key() -> str:
-    """Get OpenAI API key from Streamlit secrets or environment variable."""
     try:
         import streamlit as st
         if hasattr(st, "secrets"):
@@ -42,7 +41,6 @@ class AgentState(TypedDict):
     image_b64: str
 
 def get_client():
-    """Get OpenAI client with API key from secrets or env."""
     api_key = get_openai_api_key()
     if not api_key:
         raise ValueError(
@@ -52,7 +50,6 @@ def get_client():
     return OpenAI(api_key=api_key)
 
 def get_llm():
-    """Get ChatOpenAI LLM with API key from secrets or env."""
     api_key = get_openai_api_key()
     if not api_key:
         raise ValueError(
@@ -66,7 +63,6 @@ def get_llm():
     )
 
 def get_brand_rag():
-    """Get BrandRAG instance with API key from secrets or env."""
     api_key = get_openai_api_key()
     if not api_key:
         raise ValueError(

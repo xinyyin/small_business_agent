@@ -10,7 +10,6 @@ from langchain_core.documents import Document
 load_dotenv()
 
 def get_openai_api_key() -> str:
-    """Get OpenAI API key from Streamlit secrets or environment variable."""
     try:
         import streamlit as st
         if hasattr(st, "secrets") and "OPENAI_API_KEY" in st.secrets:
