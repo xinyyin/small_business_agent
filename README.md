@@ -1,5 +1,5 @@
 # AI Small Business Marketing Assistant
-
+Demo: https://xinyyin-small-business-agent-app-fsllct.streamlit.app/
 ## 1. Motivation
 
 Last quarter, I took a Product Management course where I designed a product for small business owners who struggle with marketing and branding. Many of them:
