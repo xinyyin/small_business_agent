@@ -12,7 +12,7 @@ st.set_page_config(
 api_key = get_openai_api_key()
 if not api_key:
     st.error("""
-    ⚠️ **API Key Not Configured**
+    **API Key Not Configured**
     
     Please set your OpenAI API key:
     - **Streamlit Cloud**: Go to Manage app → Secrets and add:
