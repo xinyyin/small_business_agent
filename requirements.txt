@@ -1,0 +1,12 @@
+streamlit
+langchain
+langchain-core
+langchain-openai
+langchain-community
+langgraph
+faiss-cpu
+openai
+pillow
+python-dotenv
+requests
+
