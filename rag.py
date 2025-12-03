@@ -41,19 +41,42 @@ class BrandRAG:
         self.folder = folder
         self.openai_api_key = openai_api_key or get_openai_api_key()
         self.vectorstore: Optional[FAISS] = None
+        self.splitter = RecursiveCharacterTextSplitter(
+            chunk_size=800,
+            chunk_overlap=200,
+            separators=["\n\n", "\n", ".", "!", "?"],
+        )
+        self.embeddings = OpenAIEmbeddings(openai_api_key=self.openai_api_key)
 
         docs = load_brand_docs(folder)
         if docs:
-            splitter = RecursiveCharacterTextSplitter(
-                chunk_size=800,
-                chunk_overlap=200,
-                separators=["\n\n", "\n", ".", "!", "?"],
-            )
-            split_docs = splitter.split_documents(docs)
-            embeddings = OpenAIEmbeddings(openai_api_key=self.openai_api_key)
-            self.vectorstore = FAISS.from_documents(split_docs, embeddings)
+            split_docs = self.splitter.split_documents(docs)
+            self.vectorstore = FAISS.from_documents(split_docs, self.embeddings)
         else:
             print(f"[BrandRAG] No documents found in {folder}. RAG will be disabled.")
+
+    def add_document(self, text: str, metadata: Optional[dict] = None) -> None:
+        """Add a new document to the vector store."""
+        doc = Document(
+            page_content=text,
+            metadata=metadata or {"source": "uploaded_file"}
+        )
+        split_docs = self.splitter.split_documents([doc])
+        
+        if self.vectorstore is None:
+            # Create new vectorstore if it doesn't exist
+            self.vectorstore = FAISS.from_documents(split_docs, self.embeddings)
+        else:
+            # Add to existing vectorstore
+            self.vectorstore.add_documents(split_docs)
+
+    def add_file(self, file_content: bytes, filename: str) -> None:
+        """Add a file to the vector store from bytes."""
+        try:
+            text = file_content.decode("utf-8")
+            self.add_document(text, metadata={"source": filename})
+        except UnicodeDecodeError:
+            print(f"[BrandRAG] Warning: Could not decode {filename} as UTF-8. Skipping.")
 
     def search(self, query: str, k: int = 4) -> Tuple[str, List[Document]]:
         if self.vectorstore is None:

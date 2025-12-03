@@ -47,9 +47,42 @@ brand_tone = st.sidebar.selectbox(
 )
 
 st.sidebar.markdown("---")
+st.sidebar.header("📁 Upload Documents for RAG")
+
+uploaded_files = st.sidebar.file_uploader(
+    "Upload brand case studies or documents",
+    type=["txt", "md"],
+    accept_multiple_files=True,
+    help="Upload .txt or .md files to enhance the RAG knowledge base"
+)
+
+if uploaded_files:
+    from rag import BrandRAG
+    
+    # Initialize or get RAG instance from session state
+    if "brand_rag" not in st.session_state:
+        st.session_state["brand_rag"] = BrandRAG(
+            folder="data/brand_cases", 
+            openai_api_key=api_key
+        )
+    
+    # Track processed files to avoid duplicates
+    if "processed_files" not in st.session_state:
+        st.session_state["processed_files"] = set()
+    
+    rag = st.session_state["brand_rag"]
+    
+    for uploaded_file in uploaded_files:
+        if uploaded_file is not None and uploaded_file.name not in st.session_state["processed_files"]:
+            file_content = uploaded_file.read()
+            rag.add_file(file_content, uploaded_file.name)
+            st.session_state["processed_files"].add(uploaded_file.name)
+            st.sidebar.success(f"✅ Added: {uploaded_file.name}")
+
+st.sidebar.markdown("---")
 st.sidebar.markdown(
-    "ℹ️ To customize RAG behavior, add your own case studies as `.txt` / `.md` under "
-    "`data/brand_cases/`."
+    "ℹ️ You can also add case studies as `.txt` / `.md` files under "
+    "`data/brand_cases/` folder."
 )
 
 with st.sidebar.expander("⚠️ Responsible AI & Limitations"):

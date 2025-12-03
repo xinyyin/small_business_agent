@@ -63,6 +63,14 @@ def get_llm():
     )
 
 def get_brand_rag():
+    """Get BrandRAG instance, preferring session state if available."""
+    try:
+        import streamlit as st
+        if hasattr(st, "session_state") and "brand_rag" in st.session_state:
+            return st.session_state["brand_rag"]
+    except Exception:
+        pass
+    
     api_key = get_openai_api_key()
     if not api_key:
         raise ValueError(
