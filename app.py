@@ -59,14 +59,12 @@ uploaded_files = st.sidebar.file_uploader(
 if uploaded_files:
     from rag import BrandRAG
     
-    # Initialize or get RAG instance from session state
     if "brand_rag" not in st.session_state:
         st.session_state["brand_rag"] = BrandRAG(
             folder="data/brand_cases", 
             openai_api_key=api_key
         )
     
-    # Track processed files to avoid duplicates
     if "processed_files" not in st.session_state:
         st.session_state["processed_files"] = set()
     

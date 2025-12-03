@@ -21,57 +21,13 @@ This project is built with the following technologies:
 **RAG, embeddings, LangGraph agents, Streamlit, and image generation**, plus
 responsible AI considerations.
 
-## 2. High-Level Architecture
+## 2. How to Run
+### 2.0 Access the deployed demo app
 
-```text
-                ┌─────────────────────────┐
-                │       User (Browser)    │
-                │  - provide business info│
-                │  - ask for copy/visuals │
-                └──────────┬──────────────┘
-                           │
-                      (Streamlit UI)
-                           │
-            ┌──────────────▼────────────────┐
-            │        app.py (Streamlit)     │
-            │  - chat-style interface       │
-            │  - collects business profile  │
-            │  - calls LangGraph agent      │
-            └───────────┬───────────────────┘
-                        │ .invoke()
-                        │
-            ┌───────────▼───────────────────┐
-            │    LangGraph Agent (agent.py) │
-            │  - State: messages + image    │
-            │  - router: brand vs vision    │
-            │  - brand node: RAG + LLM      │
-            │  - vision node: LLM prompt →  │
-            │    OpenAI Images API          │
-            └───────┬───────────┬──────────┘
-                    │           │
-             (RAG text)   (AI-only images)
-                    │           │
-      ┌─────────────▼───────┐   │
-      │   RAG + FAISS (rag) │   │
-      │ - load case studies │   │
-      │ - embeddings + FAISS│   │
-      │ - cosine similarity │   │
-      └───────────┬─────────┘   │
-                  │             │
-          ┌───────▼───────┐     │
-          │ brand_cases/  │     │
-          │ (optional txt │     │
-          │  & md files)  │     │
-          └───────────────┘     │
-                                │
-                         ┌──────▼─────────┐
-                         │ OpenAI Images  │
-                         │ (dall-e-3)     │
-                         └───────────────┘
-```
-## 3. How to Run
+I deployed the app to Streamlit Cloud, you can access it [here](https://xinyyin-small-business-agent-app-fsllct.streamlit.app/).
 
-### 3.1 Setup
+### 2.1 If you want to run the app locally, you can follow the steps below.
+### 2.1 Setup
 
 ```bash
 git clone git@github.com:xinyyin/small_business_agent.git
@@ -83,14 +39,14 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Set your OpenAI API key:
+Set OpenAI API key in environment variables:
 
 ```bash
 export OPENAI_API_KEY="YOUR_KEY_HERE"
 
 ```
 
-### 4.2 (Optional) Add Case Studies for RAG
+### 2.2 (Optional) Add Case Studies for RAG
 
 Create a folder:
 
@@ -102,11 +58,10 @@ Add some `.txt` or `.md` files describing small business marketing case studies,
 
 - `coffee_shop_story.txt`
 - `yoga_studio_launch.md`
-- `florist_valentines_campaign.txt`
 
 If you don't add any files, the assistant will still work, just without grounded case-study references.
 
-### 4.3 Run the App
+### 2.3 Run the App
 
 ```bash
 streamlit run app.py
